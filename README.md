@@ -42,7 +42,7 @@ So we need a tool to:
 
 So we build EZT, based on `lodash.template` and `rxjs`.
 
-##Introducing Component
+## Introducing Component
 
 The definition of component in EZT is:
 
@@ -80,21 +80,22 @@ const todoItem = ezt({ template: `<li><%= title %></li>` });
 
 const todoList = ezt({
   template: `
-		<div>
-			<h1>Todo List</h1>
-			<ul>
-				<% for (var item in $) { %>
-					<%= item %>
-				<% } %>
-			</ul>
-		</div>
-	`,
+  <div>
+    <h1>Todo List</h1>
+    <ul>
+      <% for (var item in $) { %>
+        <%= item %>
+      <% } %>
+    </ul>
+  </div>`,
+
   subcomponents(data) {
     return data.todos.map(todo => ({
       data: { title: todo },
       fn: todoItem
     }));
   },
+  
   init(data, element) {
     console.log(data, element);
   }
@@ -204,16 +205,17 @@ Then UI components would be like this:
 import ezt, { getDOMRefs, triggerAction, filterReaction } from "ezt"
 
 const app = ezt({
-	template: `
-		<div>
-			...
-			<button data-ref="buyNowBtn">Buy Now</button>
-		</div>
-  `,
-	subcomponents(data) { ... },
-	init(data, element) {
+  template: `
+  <div>
+    ...
+    <button data-ref="buyNowBtn">Buy Now</button>
+  </div>`,
+
+  subcomponents(data) { ... },
+
+  init(data, element) {
     // DOM refs
-		const refs = getDOMRefs(element);
+    const refs = getDOMRefs(element);
 
     // Local states
     let btnAvailable = true;
@@ -224,7 +226,7 @@ const app = ezt({
       btnAvailable = false;
       refs.buyNowBtn.classList.add("disabled");
     });
-	}
+  }
 });
 ```
 
