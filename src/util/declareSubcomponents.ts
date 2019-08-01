@@ -11,7 +11,7 @@ export default function declareSubcomponents(
   for (let k in subcomponents) {
     if (subcomponents.hasOwnProperty(k)) {
       const sc = (subcomponents as { [k: string]: SubcomponentDeclaration })[k];
-      sc.data.eztid = uniqid();
+      if (!sc.data.eztid) sc.data.eztid = uniqid();
       data.$[k] = sc.fn(sc.data);
     }
   }
