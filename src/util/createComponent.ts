@@ -18,10 +18,11 @@ export default function createComponent(options: {
   const _t = createTemplate(template);
 
   return function(data: { [k: string]: any }, element?: null | HTMLElement) {
-    if (!data.eztid) data.eztid = uniqid();
-
-    if (options.subcomponents) {
-      declareSubcomponents(data, subcomponents!(data));
+    if (!data.eztid) {
+      data.eztid = uniqid();
+      if (options.subcomponents) {
+        declareSubcomponents(data, subcomponents!(data));
+      }
     }
 
     // Used as template on server side
