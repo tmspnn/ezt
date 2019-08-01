@@ -83,8 +83,8 @@ const todoList = ezt({
   <div>
     <h1>Todo List</h1>
     <ul>
-      <% for (var item in $) { %>
-        <%= item %>
+      <% for (var i in $) { %>
+        <%= $[i] %>
       <% } %>
     </ul>
   </div>`,
@@ -95,7 +95,7 @@ const todoList = ezt({
       fn: todoItem
     }));
   },
-  
+
   init(data, element) {
     console.log(data, element);
   }
