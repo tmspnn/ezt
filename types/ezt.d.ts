@@ -43,4 +43,6 @@ declare namespace EZT {
   export function triggerReaction(type: string, params?: { [k: string]: any }): void;
 
   export function filterReaction(type: string): Observable<Action>;
+
+  export function getDOMRefs(element: HTMLElement): { [k: string]: HTMLElement };
 }
