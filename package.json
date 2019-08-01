@@ -1,0 +1,44 @@
+{
+  "name": "ezt",
+  "version": "0.1.0",
+  "description": "Template based web development library",
+  "main": "dist/ezt.js",
+  "types": "types/ezt.d.ts",
+  "scripts": {
+    "test": "jest",
+    "build": "NODE_ENV=production webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tmspnn/ezt.git"
+  },
+  "keywords": [
+    "ezt",
+    "template",
+    "web"
+  ],
+  "author": "Thomas Peng",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "rxjs": "^6.5.2",
+    "uniqid": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.136",
+    "@types/node": "^12.6.8",
+    "@types/uniqid": "^4.1.3",
+    "awesome-typescript-loader": "^5.2.1",
+    "jest": "^24.8.0",
+    "source-map-loader": "^0.2.4",
+    "typescript": "^3.5.3",
+    "webpack": "^4.36.1",
+    "webpack-bundle-analyzer": "^3.3.2",
+    "webpack-cli": "^3.3.6"
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/tests/**/*.[jt]s?(x)"
+    ]
+  }
+}
