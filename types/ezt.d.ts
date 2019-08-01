@@ -1,32 +1,34 @@
 import { Observable } from "rxjs";
-import Component from "../src/interfaces/Component";
-import SubcomponentDeclaration from "../src/interfaces/SubcomponentDeclaration";
 
-declare function ezt(options: {
+export as namespace ezt;
+
+export = EZT;
+
+declare function EZT(options: {
   template: string;
   subcomponents?: (data: {
     [k: string]: any;
-  }) => { [k: string]: SubcomponentDeclaration } | Array<SubcomponentDeclaration>;
+  }) => { [k: string]: EZT.SubcomponentDeclaration } | Array<EZT.SubcomponentDeclaration>;
   init?: (data: { [k: string]: any }, el: HTMLElement) => void;
-}): Component;
+}): EZT.Component;
 
-declare namespace ezt {
-  interface Component {
+declare namespace EZT {
+  export interface Component {
     (data: { [k: string]: any }, element?: null | HTMLElement): string | HTMLElement;
   }
 
-  interface SubcomponentDeclaration {
+  export interface SubcomponentDeclaration {
     data: { [k: string]: any };
     fn: Component;
   }
 
-  interface Action {
+  export interface Action {
     _category: string;
     _type: string;
     [k: string]: any;
   }
 
-  function createComponent(options: {
+  export function createComponent(options: {
     template: string;
     subcomponents?: (data: {
       [k: string]: any;
@@ -34,11 +36,11 @@ declare namespace ezt {
     init?: (data: { [k: string]: any }, el: HTMLElement) => void;
   }): Component;
 
-  function triggerAction(type: string, params?: { [k: string]: any }): void;
+  export function triggerAction(type: string, params?: { [k: string]: any }): void;
 
-  function filterAction(type: string): Observable<Action>;
+  export function filterAction(type: string): Observable<Action>;
 
-  function triggerReaction(type: string, params?: { [k: string]: any }): void;
+  export function triggerReaction(type: string, params?: { [k: string]: any }): void;
 
-  function filterReaction(type: string): Observable<Action>;
+  export function filterReaction(type: string): Observable<Action>;
 }
