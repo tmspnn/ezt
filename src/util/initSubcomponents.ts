@@ -3,7 +3,7 @@ export default function initSubcomponents(data: { [k: string]: any }, element: H
     if (data._$.hasOwnProperty(k)) {
       const sc = data._$[k];
       const el = element.querySelector(`[data-eztid="${sc.data.eztid}"]`);
-      if (!el) throw new Error(`Missing subcomponent: ${k} > ${data.eztid}`);
+      if (!el) throw new Error(`Missing subcomponent ${sc.data.eztid}, context: ${data}`);
       sc.fn(sc.data, el);
     }
   }
