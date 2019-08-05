@@ -2,6 +2,7 @@ import _template from "lodash/template";
 import uniqid from "uniqid";
 import Component from "../interfaces/Component";
 import SubcomponentDeclaration from "../interfaces/SubcomponentDeclaration";
+import TemplateOptions from "../interfaces/TemplateOptions";
 import createTemplate from "./createTemplate";
 import declareSubcomponents from "./declareSubcomponents";
 import initSubcomponents from "./initSubcomponents";
@@ -9,13 +10,14 @@ import html2DOM from "./html2DOM";
 
 export default function createComponent(options: {
   template: string;
+  templateOptions?: TemplateOptions;
   subcomponents?: (data: {
     [k: string]: any;
   }) => { [k: string]: SubcomponentDeclaration } | Array<SubcomponentDeclaration>;
   init?: (data: { [k: string]: any }, el: HTMLElement) => void;
 }): Component {
-  const { template, subcomponents } = options;
-  const _t = createTemplate(template);
+  const { template, templateOptions, subcomponents } = options;
+  const _t = createTemplate(template, templateOptions);
 
   return function(data: { [k: string]: any }, element?: null | HTMLElement) {
     if (!data.eztid) {

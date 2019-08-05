@@ -6,6 +6,7 @@ export = EZT;
 
 declare function EZT(options: {
   template: string;
+  templateOptions?: EZT.TemplateOptions;
   subcomponents?: (data: {
     [k: string]: any;
   }) => { [k: string]: EZT.SubcomponentDeclaration } | Array<EZT.SubcomponentDeclaration>;
@@ -28,8 +29,18 @@ declare namespace EZT {
     [k: string]: any;
   }
 
+  export interface TemplateOptions {
+    escape?: RegExp;
+    evaluate?: RegExp;
+    imports?: { [k: string]: any };
+    interpolate?: RegExp;
+    sourceURL?: string;
+    variable?: string;
+  }
+
   export function createComponent(options: {
     template: string;
+    templateOptions?: TemplateOptions;
     subcomponents?: (data: {
       [k: string]: any;
     }) => { [k: string]: SubcomponentDeclaration } | Array<SubcomponentDeclaration>;
