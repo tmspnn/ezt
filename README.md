@@ -4,7 +4,12 @@ Template based web development library.
 
 ## What is EZT?
 
-EZT means easy template, It's easy(based on lodash.template), small(8.7kB gzipped) and fast(basically vanilla js).
+EZT means easy template, It's:
+
+- Easy, based on lodash.template.
+- Small, 8.7kB gzipped.
+- Fast, it's vanilla js.
+- Available in IE10+.
 
 ## Installation
 
@@ -110,8 +115,9 @@ todoList({
 ezt is a component factory, the options are:
 
 - `template`: HTML template `string`, required.
+- `templateOptions`: lodash template options, see [here](https://lodash.com/docs/4.17.15#template).
 - `subcomponents`: a `function` that defines subcomponents as `{ data: { [k: string]: any }; fn: Component; }`, optional. It returns an `object` or an `array`, templates of subcomponents could be accessed with `data.$`.
-- `init`: a function that defines the behavior of the component, optional. The first parameter is the data object that passed to the component, the second paramter is the DOM element of the component.
+- `init`: a `function` that defines the behavior of the component, optional. The first parameter is the data object that passed to the component, the second paramter is the DOM element of the component.
 
 ## UI state and business logic
 
