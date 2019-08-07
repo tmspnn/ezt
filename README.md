@@ -6,10 +6,10 @@ Template based web development library.
 
 EZT means easy template, It's:
 
-- Easy, based on lodash.template.
-- Small, 8.7kB gzipped.
-- Fast, it's vanilla js.
-- Available in IE10+.
+- **Easy**. Based on lodash.template.
+- **Small**. 8.7kB gzipped.
+- **Fast**. It's vanilla js.
+- Available in **IE10+**.
 
 ## Installation
 
@@ -22,20 +22,22 @@ npm install ezt
 ```typescript
 import ezt from "ezt";
 
-const myComponent = ezt({ template: "<div>Hello <%= name %>.</div>" });
+const myComponent = ezt({
+  template: "<div>Hello <%= name %>.</div>"
+});
 
 myComponent({ name: "EZT" }); // "<div>Hello EZT.</div>"
 ```
 
 ## Why?
 
-Template engines works well on producing HTML strings, but they don't define behavior(event listeners, UI effects, etc) of a web app. Frontend frameworks(React, as a example) provide declarative, state-driven UI development, but state management is not easy, and the performance of React's server side rendering is not so satisfying.
+Template engines works well on producing HTML strings, but they don't define behavior(event listeners, UI effects, etc.) of a web app. Frontend frameworks(React, as a example) provide declarative, state-driven UI development, but state management is not easy, and the performance of React's server side rendering is not so satisfying.
 
 Assume this situation:
 
 - SEO is important for you site, you need server side rendering.
-- Your site has intensive user interractions and effects, you need to write a lot of javascript.
-- The business logic of your site is complicated, you need to manipulate a bunch of datasets and frontend states.
+- Your site has intensive user interractions and UI effects, you need to write a lot of javascript.
+- Business logic of your site is complicated, you need to manipulate a bunch of datasets and frontend states.
 - There may be more business modules in future, you have to make the project extensable.
 
 So we need a tool to:
@@ -57,23 +59,22 @@ interface Component {
 }
 ```
 
-It takes a data object, an optional HTML element, produces an HTML string, or a DOM element.
+It takes a data **object**, an optional **DOM element**, produces an **HTML string**, or a **DOM element**.
 
 Let's dive in with the component in section Get Started:
 
 ```typescript
 // When The second parameter(element) is undefined,
-// component will be used as template engine.
+// component will be used as template.
 myComponent({ name: "EZT" }); // "<div>Hello EZT.</div>"
 
 // When The second parameter(element) is null,
-// a new DOM element will be created,
-// and its behavior will be defined.
+// a new DOM element will be created.
 myComponent({ name: "EZT" }, null); // HTMLDivElement
 
 // When The second parameter(element) is an HTML element,
-// its behavior will be defined.
-myComponent({ name: "EZT" }, document.getElementById("app")); // HTMLDivElement
+// its behavior will be defined(see next code section).
+myComponent({ name: "EZT" }, document.getElementById("my-component")); // HTMLDivElement
 ```
 
 Now Let's build a more useful component:
@@ -102,28 +103,36 @@ const todoList = ezt({
   },
 
   init(data, element) {
-    console.log(data, element);
+    // Define behavior of your component here.
+    ...
   }
 });
 
+const todos = ["Make breakfast.", "Read a book.", "Play with my dog."];
+
 // Will produce the todo list HTML.
-todoList({
-  todos: ["Make breakfast.", "Read a book.", "Play with my dog."]
-});
+todoList({ todos });
+
+// Will produce a new todo list DOM element,
+// and its behavior will be defined by the "init" method.
+todoList({ todos }, null);
+
+// Will define the behavior of the selected element.
+todoList({ todos }, document.getElementById("todo-list"));
 ```
 
-ezt is a component factory, the options are:
+```ezt``` is a component factory, the options are:
 
-- `template`: HTML template `string`, required.
-- `templateOptions`: lodash template options, see [here](https://lodash.com/docs/4.17.15#template).
-- `subcomponents`: a `function` that defines subcomponents as `{ data: { [k: string]: any }; fn: Component; }`, optional. It returns an `object` or an `array`, templates of subcomponents could be accessed with `data.$`.
-- `init`: a `function` that defines the behavior of the component, optional. The first parameter is the data object that passed to the component, the second paramter is the DOM element of the component.
+- `template`: HTML template `string`, **required**.
+- `templateOptions`: lodash template options, see [here](https://lodash.com/docs/4.17.15#template). **Optional**.
+- `subcomponents`: a `function` that defines subcomponents as `{ data: { [k: string]: any }; fn: Component; }`, **optional**. It returns an `object` or an `array`, templates of subcomponents could be accessed with `data.$`.
+- `init`: a `function` that defines the behavior of the component, **optional**. The first parameter is the data object that passed to the component, the second paramter is the DOM element of the component.
 
-## UI state and business logic
+## Business logic and UI state management
 
-In real world development, we found that seperating UI state management from business logic could make both UI components and business modules reuseable across projects, and it also makes them more maintainable.
+In real world development, we found that **seperating UI state management from business logic** could make both UI components and business modules **reuseable** across projects, and it also makes them more **maintainable**.
 
-We define 4 APIs to separate UI states from business logic:
+We define **4 APIs** to separate UI states from business logic:
 
 ```typescript
 import { Observable } from "rxjs";
@@ -134,109 +143,73 @@ interface Action {
   [k: string]: any;
 }
 
-function triggerAction(type: string, params?: { [k: string]: any }): void;
+function dispatchAction(type: string, params?: { [k: string]: any }): void;
 
 function filterAction(type: string): Observable<Action>;
 
-function triggerReaction(type: string, params?: { [k: string]: any }): void;
+function dispatchReaction(type: string, params?: { [k: string]: any }): void;
 
 function filterReaction(type: string): Observable<Action>;
 ```
 
-Actions are operations of the user. Actions will trigger business logic, manipulate datasets, then fire a reaction. UI components will subscribe reactions, then manipulate states and change the UI. So the code will be like this:
+Actions are dispatched by user interactions(click, swipe, etc.). Actions will drive business logic(manipulate datasets), then trigger reactions. UI components will subscribe reactions, then manipulate UI states and DOM. So code will be like this:
 
 ```typescript
 // main.js
 import app from "./components/app";
-import user from "./businessModules/user";
-import product from "./businessModules/product";
-import payment from "./businessModules/payment";
+import statistics from "./modules/statistics";
 
-(function main() {
-  // Define business logic
-  filterAction("buyNowBtnClick").subscribe(() => {
-    triggerReaction("onRequest");
-    payment
-      .create({ uid: user.id, productId: product.id })
-      .then(item => {
-        user.boughtProducts.push(item);
-        triggerReaction("onPaymentSuccess");
-      })
-      .catch(error => {
-        triggerReaction("onPaymentFail", {
-          message: error.message
-        });
-      })
-      .finally(() => {
-        triggerReaction("onRequestEnd");
-      });
-  });
+filterAction("clickBtn").subscribe(() => {
+  const clickTimes = statistics.addBtnClickTimes();
+  dispatchReaction("onBtnClick", { clickTimes });
+});
 
-  // Initiate app
-  app(window.initData, document.getElementById("app"));
-})();
-```
+document.body.appendChild(app({}, null));
 
-Business logic are triggered by actions, and could be defined in function main. Business modules could be written in Object-Oriented pattern(as a class), and keep the data of their domains:
 
-```typescript
-// businessModules/user.js
-class User {
-  id = null;
-  boughtProducts = [];
-}
-
-// businessModules/product.js
-class Product {
-  id = null;
-  price = 0;
-}
-
-// businessModules/payment.js
-class Payment {
-  id = null;
-
-  create(options) {
-    return ajax.post("/api/payments", {
-      uid: options.uid,
-      productId: options.productId
-    });
+// statistics.js
+class Statistics {
+  clickTimes = 0;
+  
+  addBtnClickTimes() {
+    return ++this.clickTimes;
   }
 }
-```
 
-Then UI components would be like this:
+export default new Statistics();
 
-```typescript
-import ezt, { getDOMRefs, triggerAction, filterReaction } from "ezt"
 
-const app = ezt({
+// app.js
+import ezt, { dispatchAction, filterReaction, getDOMRefs } from "ezt"
+
+export default ezt({
   template: `
   <div>
-    ...
-    <button data-ref="buyNowBtn">Buy Now</button>
+    <span>The button has been clicked <b data-ref="times">0</b> times.</span>
+    <button data-ref="btn">Click Me</button>
   </div>`,
-
-  subcomponents(data) { ... },
-
+  
   init(data, element) {
-    // DOM refs
     const refs = getDOMRefs(element);
-
-    // Local states
-    let btnAvailable = true;
-
-    refs.buyNowBtn.addEventListener("click", () => triggerAction("buyNowBtnClick"));
-
-    filterReaction("onPaymentSuccess").subscribe(() => {
-      btnAvailable = false;
-      refs.buyNowBtn.classList.add("disabled");
+    
+    refs.btn.addEventListener("click", () => {
+      dispatchAction("clickBtn");
+    });
+    
+    filterReaction("onBtnClick", params => {
+      data.clickTimes = params.clickTimes;
+      refs.times.textContent = data.clickTimes;
     });
   }
 });
 ```
 
-UI state changes are triggered by reactions. We don't use virtual DOM, so we have to manipulate DOM by hands. In Action-Reaction pattern, DOM manipulation could be split into multiple reaction subscriptions, so it's usually not annoying. We can get DOM references with helper function `getDOMRefs`, It will refer to the DOM elements which have custom attribute `data-ref`.
+The Action-Reaction pattern defines input and output of business modules and UI components.
+
+- For business modules, Input is defined by ```filterAction```, output is defined by ```dispatchReaction```.
+- For UI components, Input is defined by ```filterReaction```, output is defined by ```dispatchAction```.
+
+In this pattern, business modules could be written in Object-Oriented pattern(as a class), keep the data of their domains, and provide public methods. UI components can focus on reactions, manipulating local data(include states), and the DOM. We don't use virtual DOM, so we have to **manipulate DOM by hands**. In Action-Reaction pattern, DOM manipulation could be split into multiple reaction subscriptions, so most of the time it's not annoying. We can get DOM references with helper function `getDOMRefs`, It will refer to the DOM elements which have custom attribute `data-ref`.
 
 ## Documentation
 
@@ -278,11 +251,11 @@ UI state changes are triggered by reactions. We don't use virtual DOM, so we hav
 - Interactions:
 
   ```typescript
-  function triggerAction(type: string, params?: { [k: string]: any }): void;
+  function dispatchAction(type: string, params?: { [k: string]: any }): void;
 
   function filterAction(type: string): Observable<Action>;
 
-  function triggerReaction(type: string, params?: { [k: string]: any }): void;
+  function dispatchReaction(type: string, params?: { [k: string]: any }): void;
 
   function filterReaction(type: string): Observable<Action>;
   ```
