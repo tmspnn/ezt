@@ -2,9 +2,9 @@ const ezt = require("../dist/ezt").default;
 const {
   createComponent,
   getDOMRefs,
-  triggerAction,
+  dispatchAction,
   filterAction,
-  triggerReaction,
+  dispatchReaction,
   filterReaction
 } = require("../dist/ezt");
 
@@ -12,9 +12,9 @@ test("module props", () => {
   expect(typeof createComponent).toBe("function");
   expect(ezt).toEqual(createComponent);
   expect(typeof getDOMRefs).toBe("function");
-  expect(typeof triggerAction).toBe("function");
+  expect(typeof dispatchAction).toBe("function");
   expect(typeof filterAction).toBe("function");
-  expect(typeof triggerReaction).toBe("function");
+  expect(typeof dispatchReaction).toBe("function");
   expect(typeof filterReaction).toBe("function");
 });
 
@@ -55,8 +55,8 @@ test("createComponent", () => {
 });
 
 test("interactions", () => {
-  filterAction("componentClickedTimes").subscribe(params => {
-    triggerReaction("onComponentClickedTimes", params);
+  filterAction("click").subscribe(params => {
+    dispatchReaction("onClick", params);
   });
 
   const testComponent = ezt({
@@ -66,10 +66,10 @@ test("interactions", () => {
       let times = 0;
 
       element.addEventListener("click", () => {
-        triggerAction("componentClickedTimes", { times: ++times });
+        dispatchAction("click", { times: ++times });
       });
 
-      filterReaction("onComponentClickedTimes").subscribe(params => {
+      filterReaction("onClick").subscribe(params => {
         refs.span.textContent = `clicked ${params.times} times`;
       });
     }

@@ -47,11 +47,11 @@ declare namespace EZT {
     init?: (data: { [k: string]: any }, el: HTMLElement) => void;
   }): Component;
 
-  export function triggerAction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchAction(type: string, params?: { [k: string]: any }): void;
 
   export function filterAction(type: string): Observable<Action>;
 
-  export function triggerReaction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchReaction(type: string, params?: { [k: string]: any }): void;
 
   export function filterReaction(type: string): Observable<Action>;
 
