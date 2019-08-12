@@ -36,9 +36,9 @@ export default function createComponent(options: {
     // Initiate subcomponents
     if (options.subcomponents) initSubcomponents(data, element!);
 
-    element!.removeAttribute("data-eztid");
-
     if (options.init) options.init(data, element!);
+
+    setTimeout(() => element!.removeAttribute("data-eztid"));
 
     return element!;
   };
