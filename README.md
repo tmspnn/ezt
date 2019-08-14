@@ -38,7 +38,7 @@ Assume this situation:
 - SEO is important for you site, you need server side rendering.
 - Your site has intensive user interractions and UI effects, you need to write a lot of javascript.
 - Business logic of your site is complicated, you need to manipulate a bunch of datasets and frontend states.
-- There may be more business modules in future, you have to make the project extensable.
+- There may be more business modules in future, you have to make the project extensible.
 
 So we need a tool to:
 
