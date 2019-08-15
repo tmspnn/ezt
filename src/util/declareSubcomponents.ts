@@ -1,3 +1,4 @@
+import { getComponentId } from "./componentId";
 import SubcomponentDeclaration from "../interfaces/SubcomponentDeclaration";
 
 export default function declareSubcomponents(
@@ -10,6 +11,8 @@ export default function declareSubcomponents(
   for (let k in subcomponents) {
     if (subcomponents.hasOwnProperty(k)) {
       const sc = (subcomponents as { [k: string]: SubcomponentDeclaration })[k];
+      if (sc.data.eztid) return;
+      sc.data.eztid = getComponentId();
       data.$[k] = sc.fn(sc.data);
     }
   }

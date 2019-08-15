@@ -1,5 +1,5 @@
+import { resetComponentId } from "./componentId";
 import _template from "lodash/template";
-import uniqid from "uniqid";
 import Component from "../interfaces/Component";
 import SubcomponentDeclaration from "../interfaces/SubcomponentDeclaration";
 import TemplateOptions from "../interfaces/TemplateOptions";
@@ -20,11 +20,11 @@ export default function createComponent(options: {
   const _t = createTemplate(template, templateOptions);
 
   return function(data: { [k: string]: any }, element?: null | HTMLElement) {
-    if (!data.eztid) {
-      data.eztid = uniqid();
-      if (options.subcomponents) {
-        declareSubcomponents(data, subcomponents!(data));
-      }
+    // Whether root component
+    if (!data.eztid) data.eztid = resetComponentId();
+
+    if (options.subcomponents) {
+      declareSubcomponents(data, subcomponents!(data));
     }
 
     // Used as template on server side
