@@ -1,5 +1,5 @@
 export default interface Action {
-  _category: string;
+  _category: "I" | "O";
   _type: string;
   [k: string]: any;
 }

@@ -1,33 +1,37 @@
-import { Observable, Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { filter } from "rxjs/operators";
 import Action from "../interfaces/Action";
 
-const actionSubject$ = new Subject<Action>();
+const s$ = new Subject<Action>();
 
-function dispatchInteraction(category: string, type: string, params: { [k: string]: any } = {}) {
-  actionSubject$.next({
+function dispatchInteraction(
+  _category: "I" | "O",
+  _type: string,
+  params: { [k: string]: any } = {}
+) {
+  s$.next({
     ...params,
-    _category: category,
-    _type: type
+    _category,
+    _type
   });
 }
 
-function filterInteraction(category: string, type: string) {
-  return actionSubject$.pipe(filter(a => a._category == category && a._type == type));
+function filterInteraction(_category: string, _type: string) {
+  return s$.pipe(filter(a => a._category == _category && a._type == _type));
 }
 
 export function dispatchAction(type: string, params?: { [k: string]: any }) {
-  dispatchInteraction("action", type, params);
+  dispatchInteraction("I", type, params);
 }
 
-export function filterAction(type: string): Observable<Action> {
-  return filterInteraction("action", type);
+export function filterAction(type: string) {
+  return filterInteraction("I", type);
 }
 
 export function dispatchReaction(type: string, params?: { [k: string]: any }) {
-  dispatchInteraction("reaction", type, params);
+  dispatchInteraction("O", type, params);
 }
 
-export function filterReaction(type: string): Observable<Action> {
-  return filterInteraction("reaction", type);
+export function filterReaction(type: string) {
+  return filterInteraction("O", type);
 }
