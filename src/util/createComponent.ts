@@ -1,5 +1,4 @@
 import { resetComponentId } from "./componentId";
-import _template from "lodash/template";
 import Component from "../interfaces/Component";
 import SubcomponentDeclaration from "../interfaces/SubcomponentDeclaration";
 import TemplateOptions from "../interfaces/TemplateOptions";
