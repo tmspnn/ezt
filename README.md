@@ -121,7 +121,7 @@ todoList({ todos }, null);
 todoList({ todos }, document.getElementById("todo-list"));
 ```
 
-```ezt``` is a component factory, the options are:
+`ezt` is a component factory, the options are:
 
 - `template`: HTML template `string`, **required**.
 - `templateOptions`: lodash template options, see [here](https://lodash.com/docs/4.17.15#template). **Optional**.
@@ -138,7 +138,7 @@ We define **4 APIs** to separate UI states from business logic:
 import { Observable } from "rxjs";
 
 interface Action {
-  _category: string;
+  _category: "I" | "O";
   _type: string;
   [k: string]: any;
 }
@@ -156,6 +156,7 @@ Actions are dispatched by user interactions(click, swipe, etc.). Actions will dr
 
 ```typescript
 // main.js
+import { filterAction, dispatchReaction } from "ezt";
 import app from "./components/app";
 import statistics from "./modules/statistics";
 
@@ -166,11 +167,10 @@ filterAction("clickBtn").subscribe(() => {
 
 document.body.appendChild(app({}, null));
 
-
 // statistics.js
 class Statistics {
   clickTimes = 0;
-  
+
   addBtnClickTimes() {
     return ++this.clickTimes;
   }
@@ -178,9 +178,8 @@ class Statistics {
 
 export default new Statistics();
 
-
 // app.js
-import ezt, { dispatchAction, filterReaction, getDOMRefs } from "ezt"
+import ezt, { dispatchAction, filterReaction, getDOMRefs } from "ezt";
 
 export default ezt({
   template: `
@@ -188,14 +187,14 @@ export default ezt({
     <span>The button has been clicked <b data-ref="times">0</b> times.</span>
     <button data-ref="btn">Click Me</button>
   </div>`,
-  
+
   init(data, element) {
     const refs = getDOMRefs(element);
-    
+
     refs.btn.addEventListener("click", () => {
       dispatchAction("clickBtn");
     });
-    
+
     filterReaction("onBtnClick", params => {
       data.clickTimes = params.clickTimes;
       refs.times.textContent = data.clickTimes;
@@ -206,8 +205,8 @@ export default ezt({
 
 The Action-Reaction pattern defines input and output of business modules and UI components.
 
-- For business modules, Input is defined by ```filterAction```, output is defined by ```dispatchReaction```.
-- For UI components, Input is defined by ```filterReaction```, output is defined by ```dispatchAction```.
+- For business modules, Input is defined by `filterAction`, output is defined by `dispatchReaction`.
+- For UI components, Input is defined by `filterReaction`, output is defined by `dispatchAction`.
 
 In this pattern, business modules could be written in Object-Oriented pattern(as a class), keep the data of their domains, and provide public methods. UI components can focus on reactions, manipulating local data(include states), and the DOM. We don't use virtual DOM, so we have to **manipulate DOM by hands**. In Action-Reaction pattern, DOM manipulation could be split into multiple reaction subscriptions, so most of the time it's not annoying. We can get DOM references with helper function `getDOMRefs`, It will refer to the DOM elements which have custom attribute `data-ref`.
 
@@ -226,7 +225,7 @@ In this pattern, business modules could be written in Object-Oriented pattern(as
   }
 
   interface Action {
-    _category: string;
+    _category: "I" | "O";
     _type: string;
     [k: string]: any;
   }
