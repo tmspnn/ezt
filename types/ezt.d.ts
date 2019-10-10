@@ -49,11 +49,11 @@ declare namespace EZT {
 
   export function dispatchAction(type: string, args: any): void;
 
-  export function filterAction(type: string): Observable<Action>;
+  export function filterAction(type: string): Observable<any>;
 
   export function dispatchReaction(type: string, args: any): void;
 
-  export function filterReaction(type: string): Observable<Action>;
+  export function filterReaction(type: string): Observable<any>;
 
   export function getDOMRefs(element: HTMLElement): { [k: string]: HTMLElement };
 }
