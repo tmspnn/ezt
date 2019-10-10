@@ -51,7 +51,7 @@ So we build EZT, based on `lodash.template` and `rxjs`.
 
 ## Introducing Component
 
-The definition of component in EZT is:
+Components in EZT are pure functions:
 
 ```typescript
 interface Component {
@@ -59,13 +59,13 @@ interface Component {
 }
 ```
 
-It takes a data **object**, an optional **DOM element**, produces an **HTML string**, or a **DOM element**.
+They take a data **object**, an optional **DOM element**, produces an **HTML string**, or a **DOM element**.
 
 Let's dive in with the component in section Get Started:
 
 ```typescript
 // When The second parameter(element) is undefined,
-// component will be used as template.
+// the component will act like lodash.template.
 myComponent({ name: "EZT" }); // "<div>Hello EZT.</div>"
 
 // When The second parameter(element) is null,
@@ -130,26 +130,20 @@ todoList({ todos }, document.getElementById("todo-list"));
 
 ## Business logic and UI state management
 
-In real world development, we found that **seperating UI state management from business logic** could make both UI components and business modules **reuseable** across projects, and it also makes them more **maintainable**.
+In real world development, we found that **seperating UI state management from business logic** could make both UI components and business modules **reuseable** across projects, and also makes them more **maintainable**.
 
 We define **4 APIs** to separate UI states from business logic:
 
 ```typescript
 import { Observable } from "rxjs";
 
-interface Action {
-  _category: "I" | "O";
-  _type: string;
-  [k: string]: any;
-}
+export function dispatchAction(type: string, args: any): void;
 
-function dispatchAction(type: string, params?: { [k: string]: any }): void;
+export function filterAction(type: string): Observable<any>;
 
-function filterAction(type: string): Observable<Action>;
+export function dispatchReaction(type: string, args: any): void;
 
-function dispatchReaction(type: string, params?: { [k: string]: any }): void;
-
-function filterReaction(type: string): Observable<Action>;
+export function filterReaction(type: string): Observable<any>;
 ```
 
 Actions are dispatched by user interactions(click, swipe, etc.). Actions will drive business logic(manipulate datasets), then trigger reactions. UI components will subscribe reactions, then manipulate UI states and DOM. So code will be like this:
@@ -195,8 +189,8 @@ export default ezt({
       dispatchAction("clickBtn");
     });
 
-    filterReaction("onBtnClick", params => {
-      data.clickTimes = params.clickTimes;
+    filterReaction("onBtnClick", args => {
+      data.clickTimes = args.clickTimes;
       refs.times.textContent = data.clickTimes;
     });
   }
@@ -225,9 +219,9 @@ In this pattern, business modules could be written in Object-Oriented pattern(as
   }
 
   interface Action {
-    _category: "I" | "O";
-    _type: string;
-    [k: string]: any;
+    category: "I" | "O";
+    type: string;
+    args: any;
   }
   ```
 
@@ -250,13 +244,13 @@ In this pattern, business modules could be written in Object-Oriented pattern(as
 - Interactions:
 
   ```typescript
-  function dispatchAction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchAction(type: string, args: any): void;
 
-  function filterAction(type: string): Observable<Action>;
+  export function filterAction(type: string): Observable<any>;
 
-  function dispatchReaction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchReaction(type: string, args: any): void;
 
-  function filterReaction(type: string): Observable<Action>;
+  export function filterReaction(type: string): Observable<any>;
   ```
 
 - Helpers:
