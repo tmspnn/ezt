@@ -1,35 +1,30 @@
 import { Subject } from "rxjs";
-import { filter } from "rxjs/operators";
+import { filter, pluck } from "rxjs/operators";
 import Action from "../interfaces/Action";
 
 const s$ = new Subject<Action>();
 
-function dispatchInteraction(
-  _category: "I" | "O",
-  _type: string,
-  params: { [k: string]: any } = {}
-) {
-  s$.next({
-    ...params,
-    _category,
-    _type
-  });
+function dispatchInteraction(category: "I" | "O", type: string, args: any) {
+  s$.next({ category, type, args });
 }
 
-function filterInteraction(_category: string, _type: string) {
-  return s$.pipe(filter(a => a._category == _category && a._type == _type));
+function filterInteraction(category: "I" | "O", type: string) {
+  return s$.pipe(
+    filter(a => a.category == category && a.type == type),
+    pluck("args")
+  );
 }
 
-export function dispatchAction(type: string, params?: { [k: string]: any }) {
-  dispatchInteraction("I", type, params);
+export function dispatchAction(type: string, args: any) {
+  dispatchInteraction("I", type, args);
 }
 
 export function filterAction(type: string) {
   return filterInteraction("I", type);
 }
 
-export function dispatchReaction(type: string, params?: { [k: string]: any }) {
-  dispatchInteraction("O", type, params);
+export function dispatchReaction(type: string, args: any) {
+  dispatchInteraction("O", type, args);
 }
 
 export function filterReaction(type: string) {

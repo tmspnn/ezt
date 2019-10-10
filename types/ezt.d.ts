@@ -24,9 +24,9 @@ declare namespace EZT {
   }
 
   export interface Action {
-    _category: "I" | "O";
-    _type: string;
-    [k: string]: any;
+    category: "I" | "O";
+    type: string;
+    args: any;
   }
 
   export interface TemplateOptions {
@@ -47,11 +47,11 @@ declare namespace EZT {
     init?: (data: { [k: string]: any }, el: HTMLElement) => void;
   }): Component;
 
-  export function dispatchAction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchAction(type: string, args: any): void;
 
   export function filterAction(type: string): Observable<Action>;
 
-  export function dispatchReaction(type: string, params?: { [k: string]: any }): void;
+  export function dispatchReaction(type: string, args: any): void;
 
   export function filterReaction(type: string): Observable<Action>;
 
