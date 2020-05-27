@@ -1,5 +1,5 @@
 import _template from "lodash/template";
-import TemplateOptions from "../interfaces/TemplateOptions";
+import TemplateOptions from "../../types/TemplateOptions";
 
 export default function createTemplate(t: string, options?: TemplateOptions) {
   const strGroup = t.match(/(<[\w-_]+)\s?(.*)/);

@@ -1,6 +1,6 @@
 import { Subject } from "rxjs";
 import { filter, pluck } from "rxjs/operators";
-import Action from "../interfaces/Action";
+import Action from "../types/Action";
 
 const s$ = new Subject<Action>();
 
