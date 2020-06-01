@@ -1,5 +1,5 @@
+import { LazyComponent } from "../../types/Component";
 import { getComponentId } from "./componentId";
-import LazyComponent from "../../types/LazyComponent";
 
 export default function declareChildren(
   data: { [k: string]: any },

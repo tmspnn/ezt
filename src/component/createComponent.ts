@@ -1,20 +1,15 @@
 import { resetComponentId } from "./componentId";
-import Component from "../../types/Component";
-import LazyComponent from "../../types/LazyComponent";
-import TemplateOptions from "../../types/TemplateOptions";
+import { Component, ComponentOptions } from "../../types/Component";
 import createTemplate from "../util/createTemplate";
 import declareChildren from "./declareChildren";
 import getDOMRefs from "../util/getDOMRefs";
 import html2DOM from "../util/html2DOM";
 import initChildren from "./initChildren";
 
-export default function createComponent(options: {
-  template: string;
-  templateOptions?: TemplateOptions;
-  children?: (data: { [k: string]: any }) => { [k: string]: LazyComponent } | Array<LazyComponent>;
-  init?: (data: { [k: string]: any }, el: HTMLElement, refs: { [k: string]: HTMLElement }) => void;
-}): Component {
-  const { template, templateOptions, children, init } = options;
+export default function createComponent(options: string | ComponentOptions): Component {
+  const componentOptions: ComponentOptions =
+    typeof options == "string" ? { template: options } : options;
+  const { template, templateOptions, children, init } = componentOptions;
   const T = createTemplate(template, templateOptions);
 
   return function (data: { [k: string]: any }, element?: null | HTMLElement) {
