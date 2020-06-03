@@ -7,7 +7,7 @@ export default class Controller {
   bind() {
     const proto = this.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach(m => {
-      if (typeof m != "function" || m == "constructor") return;
+      if (typeof proto[m] != "function" || m == "constructor") return;
       if (!proto[m].pipes) return this._on(m, proto[m].bind(this));
       if (typeof proto[m].pipes == "function" || Array.isArray(proto[m].pipes)) {
         return this._on(m, proto[m].pipes, proto[m].bind(this));
@@ -42,9 +42,9 @@ export default class Controller {
     const subscribable = !handler
       ? observable
       : Array.isArray(pipes)
-      ? (observable as any).pipe(pipes as UnaryFunction<any, any>[])
+      ? (observable as any).pipe(...(pipes as UnaryFunction<any, any>[]))
       : observable.pipe(pipes as UnaryFunction<any, any>);
-    const subscription = subscribable.subscibe(handler || pipes, (e: any) => {
+    const subscription = subscribable.subscribe(handler || pipes, (e: any) => {
       console.error(`Error in ${actionName}: ${e}`);
     });
     this._subscriptions.push(subscription);
