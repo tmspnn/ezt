@@ -2,14 +2,14 @@
 
 Template based web development library.
 
-## What is EZT?
+EZT means "Easy Template", It's:
 
-EZT means easy template, It's:
-
-- **Easy**. Based on lodash.template.
-- **Small**. 8.7kB gzipped.
-- **Fast**. It's vanilla js.
+- Easy to use. It's built on `lodash.template` and `rxjs`.
+- Small. **8.5kB** gzipped.
+- Available in both **server side** and **frontend**.
 - Available in **IE10+**.
+
+---
 
 ## Installation
 
@@ -17,41 +17,306 @@ EZT means easy template, It's:
 npm install ezt
 ```
 
+---
+
 ## Get Started
 
-```typescript
+```javascript
 import ezt from "ezt";
 
-const myComponent = ezt({
-  template: "<div>Hello <%= name %>.</div>"
+const data = [{ id: 1, title: "Make breakfast.", completed: false }];
+
+const itemComponent = ezt("<li><%= todo %></li>");
+
+const listComponent = ezt({
+  template: `
+  <ul id="list">
+    <% for (var i in $) { %>
+      <%= $[i] %>
+    <% } %>
+  </ul>`,
+  children: data => {
+    return data.map(item => ({
+      data: item,
+      fn: itemComponent
+    }));
+  }
 });
 
-myComponent({ name: "EZT" }); // "<div>Hello EZT.</div>"
+console.log(listComponent(todos)); // Will print the list.
 ```
+
+---
 
 ## Why?
 
-Template engines works well on producing HTML strings, but they don't define behavior(event listeners, UI effects, etc.) of a web app. Frontend frameworks(React, as a example) provide declarative, state-driven UI development, but state management is not easy, and the performance of React's server side rendering is not so satisfying.
+Template engines works well on producing HTML strings, but they don't define behavior(event listeners, animations, etc.) of a web app. Frontend frameworks based on virtual DOM provide declarative, state-driven UI development, but state management is not easy, and the performance of server side rendering is not so satisfying.
 
 Assume this situation:
 
-- SEO is important for you site, you need server side rendering.
-- Your site has intensive user interractions and UI effects, you need to write a lot of javascript.
-- Business logic of your site is complicated, you need to manipulate a bunch of datasets and frontend states.
-- There may be more business modules in future, you have to make the project extensible.
+- SEO is important for you.
+- Your site has intensive user interractions and UI effects.
+- Business logic of your site is complicated, and there may be a lot more modules in future.
 
-So we need a tool to:
+So we need to:
 
 - Render HTML with high performance on server side.
-- Define behavior of DOM elements.
-- Create DOM elements if we need to.
-- Separate UI state management from business logic.
+- Declare UI and interaction of our web app.
+- Build flexible and maintainable business logic.
 
-So we build EZT, based on `lodash.template` and `rxjs`.
+---
 
-## Introducing Component
+## How to?
 
-Components in EZT are pure functions:
+### **1. Render HTML with high performance on server side.**
+
+On server side, components are just template functions. Components without children can be declared like this:
+
+```javascript
+const itemComponent = ezt("<li><%= todo %></li>");
+```
+
+or this:
+
+```javascript
+const itemComponent = ezt({ template: "<li><%= todo %></li>" });
+```
+
+To declare components with children, we need a `children` method:
+
+```javascript
+const listComponent = ezt({
+  template: `
+  <ul id="list">
+    <% for (var i in $) { %>
+      <%= $[i] %>
+    <% } %>
+  </ul>`,
+  children: data => {
+    return data.map(item => ({
+      data: item,
+      fn: itemComponent
+    }));
+  }
+});
+```
+
+Method `chidren` takes a data object, returns an `Array` or an `Object` with each item in it has two property: `data`(data passed to the child) and `fn`(the child component).
+
+In the template, dollar sign `$` refers to templates of the children. In the example above, `$[0]` is `<li>Make breakfast.</li>`
+
+Since components are just template functions, we can import them and generate HTML easily:
+
+```javascript
+const express = require("express");
+const listComponent = require("./components/listComponent");
+
+const app = express();
+
+app.get("/todos", (req, res) => {
+  const data = [{ id: 1, title: "Make breakfast.", completed: false }];
+  const listHtml = listComponent(data);
+
+  res.set("Content-Type", "text/html");
+  res.send(`
+    <!doctype html>
+    <html lang="en">
+      <head></head>
+      <body>
+        ${listHtml}
+      </body>
+    </html>
+  `);
+});
+
+app.listen(3000);
+```
+
+---
+
+### **2. Declare UI and interaction of our web app.**
+
+EZT uses [`lodash.template`](https://lodash.com/docs/4.17.15#template) and UI declaration is just the same:
+
+```js
+let t = ezt("hello <%= name %>!");
+
+t({ name: "John" }); // "hello John!"
+
+t = ezt("<b><%- value %></b>");
+
+t({ value: "<script>" }); // "<b>&lt;script&gt;</b>"
+
+t = ezt('<%= "\\<%- value %\\>" %>');
+
+t({ value: "This value will be ignored" }); // "<%- value %>"
+```
+
+for more examples, you can check [lodash docs](https://lodash.com/docs/4.17.15#template).
+
+EZT is based no template, not virtual DOM, so there is no `setState`. EZT adopts traditional **MVC** instead of state-centralized
+patterns. Components are in view layer, they can either dispatch an action or respond to data change. Let's make the example above more practical, if we want to remove a todo item:
+
+```javascript
+// components/itemComponent.js
+import { dispatch, respondTo } from "ezt";
+
+const itemComponent = ezt({
+  template: `
+  <li>
+    <span>
+      <%= id %>.<%= title %>
+    </span>
+    <button data-ref="btn">Remove</button>
+  </li>`,
+  init(data, el, refs) {
+    const { id } = data;
+    const { btn } = refs;
+    const subscriptions = {};
+
+    btn.addEventListener("click", () => {
+      dispatch("removeItem", id);
+    });
+
+    subscriptions.onRemove = respondTo("itemRemoved", id => {
+      if (id === data.id) {
+        subscriptions.onRemove.unsubscribe();
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      }
+    });
+  }
+});
+
+export default itemComponent;
+```
+
+The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and refs is the reference to the DOM elements with `data-ref` attributes.
+
+When rerendering, DOM manipulation is still needed, so libraries like `jQuery` or `DOM7` are recommended.
+
+**Why we still choose to manipulate DOM by hand?**
+
+- With components, There won't be a lot of DOM-related code in top level(`window` or `document`), all DOM manipulation are in local scale and deal with the component itself, so most of the time it's not complicated.
+
+- Template engines don't deal with event listeners, we have to add them in `init` method.
+
+- Most of the UI changes are implemented by css, css is the natual state machine.
+
+- No concerns on `componentShouldUpdate`, `forceUpdate` ..., and subscriptions are more flexible than component lifecycle hooks.
+
+---
+
+Now let's handle the actions dispatched by `itemComponent`
+
+```javascript
+// controllers/listController.js
+import { Controller } from "ezt";
+import listModel from "../models/listModel";
+
+class ListController extends Controller {
+  removeItem(id) {
+    if (model.removeTodoItemById(id)) {
+      this.respond("itemRemoved", id);
+    }
+  }
+}
+
+export default new ListController();
+```
+
+Actions dispatched by components will be handled by corresponding methods of controllers. Controllers' methods are bind to themselves, so we **don't** have to write `removeItemById = id => {...}`.
+
+Models can be simple objects:
+
+```javascript
+// models/listModel.js
+class ListModel {
+  todos = [];
+
+  constructor(todos) {
+    this.todos = todos;
+  }
+
+  removeTodoItemById(id) {
+    const index = this.todos.findIndex(item => item.id === id);
+    return index > -1 ? this.todos.splice(index, 1) : null;
+  }
+}
+
+export default new ListModel([{ id: 1, title: "Make breakfast.", completed: false }]);
+```
+
+Then we can run our app:
+
+```javascript
+// main.js
+import listModel from "./models/listModel";
+import listComponent from "./components/listComponent";
+import listController from "./controllers/listController";
+
+listController.bind();
+
+listComponent(listModel.todos, document.getElementById("list"));
+```
+
+---
+
+### **3. Build flexible and maintainable business logic.**
+
+Domain Driven Design(DDD) is recommended. We can have multiple domains(models) and each domain provides methods to manipulate data. Ajax calls are placed in controllers.
+
+```javascript
+// models/userModel.js
+class listModel {
+  ...
+
+  toggleTodoItem(id) {
+    const item = this.todos.find(todo => todo.id === id);
+    if (item) {
+      item.completed = !item.completed;
+      return item;
+    }
+    return null;
+  }
+}
+
+// controllers/listController.js
+/* Assume we've made another module: log */
+import logModel from "../models/logModel";
+
+class ListController {
+  ...
+
+  toggleItem(id) {
+    const log = logModel.getLogContent(id);
+
+    return http.post("path/to/log/system", log).then(res => {
+      console.log("log uploaded");
+      const item = listModel.toggleTodoItem(id);
+      this.respond("itemToggled", item);
+    });
+  }
+}
+
+```
+
+---
+
+## Docs
+
+- [Component](#ezt-component)
+- [ComponentOptions](#ezt-component-options)
+- [Controller](#ezt-controller)
+- [createComponent](#ezt-create-component)
+- [dispatch](#ezt-dispatch)
+- [ezt](#ezt-ezt)
+- [LazyComponent](#ezt-lazy-component)
+- [respondTo](#ezt-respond-to)
+- [TemplateOptions](#ezt-template-options)
+
+### <a name="ezt-action"></a> `ezt.Component`
 
 ```typescript
 interface Component {
@@ -59,202 +324,131 @@ interface Component {
 }
 ```
 
-They take a data **object**, an optional **DOM element**, produces an **HTML string**, or a **DOM element**.
-
-Let's dive in with the component in section Get Started:
+### <a name="ezt-component-options"></a> `ezt.ComponentOptions`
 
 ```typescript
-// When The second parameter(element) is undefined,
-// the component will act like lodash.template.
-myComponent({ name: "EZT" }); // "<div>Hello EZT.</div>"
-
-// When The second parameter(element) is null,
-// a new DOM element will be created.
-myComponent({ name: "EZT" }, null); // HTMLDivElement
-
-// When The second parameter(element) is an HTML element,
-// its behavior will be defined(see next code section).
-myComponent({ name: "EZT" }, document.getElementById("my-component")); // HTMLDivElement
+interface ComponentOptions {
+  template: string;
+  templateOptions?: TemplateOptions;
+  children?: (data: { [k: string]: any }) => { [k: string]: LazyComponent } | Array<LazyComponent>;
+  init?: (data: { [k: string]: any }, el: HTMLElement, refs: { [k: string]: HTMLElement }) => void;
+}
 ```
 
-Now Let's build a more useful component:
+### <a name="ezt-controller"></a> `ezt.Controller`
 
 ```typescript
-import ezt from "ezt";
+import { Subscription, UnaryFunction } from "rxjs";
 
-const todoItem = ezt({ template: `<li><%= title %></li>` });
+abstract class Controller {
+  _subscriptions: Array<Subscription>;
 
-const todoList = ezt({
-  template: `
-  <div>
-    <h1>Todo List</h1>
-    <ul>
-      <% for (var i in $) { %>
-        <%= $[i] %>
-      <% } %>
-    </ul>
-  </div>`,
+  bind(): void;
 
-  subcomponents(data) {
-    return data.todos.map(todo => ({
-      data: { title: todo },
-      fn: todoItem
-    }));
-  },
+  unbind(): void;
 
-  init(data, element) {
-    // Define behavior of your component here.
-    ...
-  }
-});
+  dispatch(name: string, args: any): Controller;
 
-const todos = ["Make breakfast.", "Read a book.", "Play with my dog."];
+  respond(name: string, args: any): Controller;
 
-// Will produce the todo list HTML.
-todoList({ todos });
-
-// Will produce a new todo list DOM element,
-// and its behavior will be defined by the "init" method.
-todoList({ todos }, null);
-
-// Will define the behavior of the selected element.
-todoList({ todos }, document.getElementById("todo-list"));
+  _on(
+    actionName: string,
+    pipes: () => void | UnaryFunction<any, any> | UnaryFunction<any, any>[],
+    handler?: () => void
+  ): Controller;
+}
 ```
 
-`ezt` is a component factory, the options are:
+Example:
 
-- `template`: HTML template `string`, **required**.
-- `templateOptions`: lodash template options, see [here](https://lodash.com/docs/4.17.15#template). **Optional**.
-- `subcomponents`: a `function` that defines subcomponents as `{ data: { [k: string]: any }; fn: Component; }`, **optional**. It returns an `object` or an `array`, templates of subcomponents could be accessed with `data.$`.
-- `init`: a `function` that defines the behavior of the component, **optional**. The first parameter is the data object that passed to the component, the second paramter is the DOM element of the component.
+```javascript
+import { Controller, dispatch, respondTo } from "ezt";
 
-## Business logic and UI state management
-
-In real world development, we found that **seperating UI state management from business logic** could make both UI components and business modules **reuseable** across projects, and also makes them more **maintainable**.
-
-We define **4 APIs** to separate UI states from business logic:
-
-```typescript
-import { Observable } from "rxjs";
-
-export function dispatchAction(type: string, args: any): void;
-
-export function filterAction(type: string): Observable<any>;
-
-export function dispatchReaction(type: string, args: any): void;
-
-export function filterReaction(type: string): Observable<any>;
-```
-
-Actions are dispatched by user interactions(click, swipe, etc.). Actions will drive business logic(manipulate datasets), then trigger reactions. UI components will subscribe reactions, then manipulate UI states and DOM. So code will be like this:
-
-```typescript
-// main.js
-import { filterAction, dispatchReaction } from "ezt";
-import app from "./components/app";
-import statistics from "./modules/statistics";
-
-filterAction("clickBtn").subscribe(() => {
-  const clickTimes = statistics.addBtnClickTimes();
-  dispatchReaction("onBtnClick", { clickTimes });
-});
-
-document.body.appendChild(app({}, null));
-
-// statistics.js
-class Statistics {
-  clickTimes = 0;
-
-  addBtnClickTimes() {
-    return ++this.clickTimes;
+class MyController extends Controller {
+  log(content) {
+    console.log("myController.log: " + content);
   }
 }
 
-export default new Statistics();
+const myController = new MyController();
 
-// app.js
-import ezt, { dispatchAction, filterReaction, getDOMRefs } from "ezt";
+myController.bind(); // myController is listening to actions now
+dispatch("log", "testing log"); // myController.log: testing log
 
-export default ezt({
-  template: `
-  <div>
-    <span>The button has been clicked <b data-ref="times">0</b> times.</span>
-    <button data-ref="btn">Click Me</button>
-  </div>`,
+respondTo("logged", content => {
+  console.log("respondTo.logged: " + content);
+});
+myController.respond("logged", "records logged"); // respondTo.logged: records logged
 
-  init(data, element) {
-    const refs = getDOMRefs(element);
+myController.unbind(); // myController is not listening to actions any more
+dispatch("log", "testing log"); // Won't print
 
-    refs.btn.addEventListener("click", () => {
-      dispatchAction("clickBtn");
-    });
+// Still able to send responses
+myController.respond("logged", "records logged"); // respondTo.logged: records logged
+```
 
-    filterReaction("onBtnClick", args => {
-      data.clickTimes = args.clickTimes;
-      refs.times.textContent = data.clickTimes;
+### <a name="ezt-create-component"></a> `ezt.createComponent`
+
+See [`ezt`](#ezt-ezt).
+
+### <a name="ezt-dispatch"></a> `ezt.dispatch`
+
+```typescript
+function dispatch(type: string, args: any): void;
+```
+
+### <a name="ezt-ezt"></a> `ezt`
+
+```typescript
+function ezt(options: string | ComponentOptions): Component;
+
+/* Examples */
+const greetingDiv = ezt({
+  template: "<div>Hello <%= name %></div>",
+  init(data, el) {
+    el.addEventListener("click", () => {
+      el.textContent = 😀;
     });
   }
 });
+
+greetDiv("Mike"); // <div>Hello Mike</div>
+
+greetingDiv("Mike", null) // Will produce a new HTMLDivElement. Use this when we want to create a new component in browser.
+
+greetingDiv("Mike", document.getElementById("greeting-div")); // Will call init method on the selected div.
 ```
 
-The Action-Reaction pattern defines input and output of business modules and UI components.
+### <a name="ezt-lazy-component"></a> `ezt.LazyComponent`
 
-- For business modules, Input is defined by `filterAction`, output is defined by `dispatchReaction`.
-- For UI components, Input is defined by `filterReaction`, output is defined by `dispatchAction`.
+```typescript
+interface LazyComponent {
+  data: { [k: string]: any };
+  fn: Component;
+}
+```
 
-In this pattern, business modules could be written in Object-Oriented pattern(as a class), keep the data of their domains, and provide public methods. UI components can focus on reactions, manipulating local data(include states), and the DOM. We don't use virtual DOM, so we have to **manipulate DOM by hands**. In Action-Reaction pattern, DOM manipulation could be split into multiple reaction subscriptions, so most of the time it's not annoying. We can get DOM references with helper function `getDOMRefs`, It will refer to the DOM elements which have custom attribute `data-ref`.
+### <a name="ezt-respond-to"></a> `ezt.respondTo`
 
-## Documentation
+```typescript
+import { Subscription, UnaryFunction } from "rxjs";
 
-- Interfaces:
+function respondTo(
+  reaction: string,
+  pipes: () => void | UnaryFunction<any, any> | UnaryFunction<any, any>[],
+  handler?: () => void
+): Subscription;
+```
 
-  ```typescript
-  interface Component {
-    (data: { [k: string]: any }, element?: null | HTMLElement): string | HTMLElement;
-  }
+### <a name="ezt-template-options"></a> `ezt.TemplateOptions`
 
-  interface SubcomponentDeclaration {
-    data: { [k: string]: any };
-    fn: Component;
-  }
-
-  interface Action {
-    category: "I" | "O";
-    type: string;
-    args: any;
-  }
-  ```
-
-- Component factory:
-
-  ```typescript
-  // These are equivillant:
-  //   import ezt from "ezt";
-  //   import { createComponent } from "ezt";
-
-  function createComponent(options: {
-    template: string;
-    subcomponents?: (data: {
-      [k: string]: any;
-    }) => { [k: string]: SubcomponentDeclaration } | Array<SubcomponentDeclaration>;
-    init?: (data: { [k: string]: any }, el: HTMLElement) => void;
-  }): Component;
-  ```
-
-- Interactions:
-
-  ```typescript
-  export function dispatchAction(type: string, args: any): void;
-
-  export function filterAction(type: string): Observable<any>;
-
-  export function dispatchReaction(type: string, args: any): void;
-
-  export function filterReaction(type: string): Observable<any>;
-  ```
-
-- Helpers:
-
-  ```typescript
-  function getDOMRefs(element: HTMLElement): { [k: string]: HTMLElement };
-  ```
+```typescript
+interface TemplateOptions {
+  escape?: RegExp;
+  evaluate?: RegExp;
+  imports?: { [k: string]: any };
+  interpolate?: RegExp;
+  sourceURL?: string;
+  variable?: string;
+}
+```
