@@ -1,7 +1,7 @@
 import { Subscription, UnaryFunction } from "rxjs";
 import { dispatchAction, dispatchReaction, filterAction } from "./interactions";
 
-export default class Controller {
+export default abstract class Controller {
   _subscriptions: Array<Subscription> = [];
 
   bind() {

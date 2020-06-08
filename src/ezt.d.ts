@@ -40,13 +40,7 @@ declare namespace EZT {
 
   export function createComponent(options: string | ComponentOptions): Component;
 
-  export interface Action {
-    category: "I" | "O";
-    type: string;
-    args: any;
-  }
-
-  export class Controller {
+  export abstract class Controller {
     _subscriptions: Array<Subscription>;
 
     bind(): void;
