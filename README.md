@@ -198,13 +198,13 @@ When rerendering, DOM manipulation is still needed, so libraries like `jQuery` o
 
 **Why we still choose to manipulate DOM by hand?**
 
-- With components, There won't be a lot of DOM-related code in top level(`window` or `document`), all DOM manipulation are in local scale and deal with the component itself, so most of the time it's not complicated.
+- With components, There won't be a lot of DOM-related code on top level(`window` or `document`), all DOM manipulations are local(deal with the component itself), so most of the time it's not complicated.
 
 - Template engines don't deal with event listeners, we have to add them in `init` method.
 
-- Most of the UI changes are implemented by css, css is the natual state machine.
+- Most of the UI changes are implemented by CSS. CSS is a natual state machine.
 
-- No concerns on `componentShouldUpdate`, `forceUpdate` ..., and subscriptions are more flexible than component lifecycle hooks.
+- No concerns on `componentShouldUpdate`, `forceUpdate` .etc, and subscriptions are more flexible than component lifecycle hooks.
 
 ---
 
@@ -362,6 +362,7 @@ abstract class Controller {
 Example:
 
 ```javascript
+import { throttleTime, delay } from "rxjs/operators";
 import { Controller, dispatch, respondTo } from "ezt";
 
 class MyController extends Controller {
@@ -385,6 +386,12 @@ dispatch("log", "testing log"); // Won't print
 
 // Still able to send responses
 myController.respond("logged", "records logged"); // respondTo.logged: records logged
+
+// We can add pipes for methods
+myController.log.pipes = throttleTime(100);
+
+// Multiple pipes
+myController.log.pipes = [throttleTime(100), delay(20)];
 ```
 
 ### <a name="ezt-create-component"></a> `ezt.createComponent`
@@ -401,8 +408,11 @@ function dispatch(type: string, args: any): void;
 
 ```typescript
 function ezt(options: string | ComponentOptions): Component;
+```
 
-/* Examples */
+Example:
+
+```javascript
 const greetingDiv = ezt({
   template: "<div>Hello <%= name %></div>",
   init(data, el) {
@@ -438,6 +448,29 @@ function respondTo(
   pipes: () => void | UnaryFunction<any, any> | UnaryFunction<any, any>[],
   handler?: () => void
 ): Subscription;
+```
+
+Example:
+
+```javascript
+import { throttleTime, delay } from "rxjs/operators";
+
+const subscriptions1 = respondTo("itemRemoved", id => {
+  console.log(`item with id = ${id} is removed`);
+});
+subscriptions1.unsubscribe();
+
+/* We can add pipes */
+const subscriptions2 = respondTo("itemRemoved", throttleTime(100), id => {
+  console.log(`item with id = ${id} is removed`);
+});
+subscription2.unsubscribe();
+
+/* Multiple pipes */
+const subscriptions3 = respondTo("itemRemoved", [throttleTime(100), delay(20)], id => {
+  console.log(`item with id = ${id} is removed`);
+});
+subscription3.unsubscribe();
 ```
 
 ### <a name="ezt-template-options"></a> `ezt.TemplateOptions`
