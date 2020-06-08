@@ -1,6 +1,6 @@
 {
   "name": "ezt",
-  "version": "0.3.0-beta",
+  "version": "0.3.1-beta",
   "description": "Template based web development library",
   "main": "dist/ezt.js",
   "types": "types/ezt.d.ts",
