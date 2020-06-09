@@ -4,7 +4,7 @@ Template based web development library.
 
 EZT means "Easy Template", It's:
 
-- Easy to use. It's built on `lodash.template` and `rxjs`.
+- **Easy** to use. It's built on `lodash.template` and `rxjs`.
 - Small. **8.5kB** gzipped.
 - Available in both **server side** and **frontend**.
 - Available in **IE10+**.
@@ -101,7 +101,7 @@ const listComponent = ezt({
 });
 ```
 
-Method `chidren` takes a data object, returns an `Array` or an `Object` with each item in it has two property: `data`(data passed to the child) and `fn`(the child component).
+Method `chidren` takes a data object, returns an `Array` **or** an `Object` with each item in it has two property: `data`(data passed to the child) and `fn`(the child component).
 
 In the template, dollar sign `$` refers to templates of the children. In the example above, `$[0]` is `<li>Make breakfast.</li>`
 
@@ -192,7 +192,7 @@ const itemComponent = ezt({
 export default itemComponent;
 ```
 
-The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and refs is the reference to the DOM elements with `data-ref` attributes.
+The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and refs is the reference to the DOM elements with attribute `data-ref`.
 
 When rerendering, DOM manipulation is still needed, so libraries like `jQuery` or `DOM7` are recommended.
 
@@ -217,7 +217,7 @@ import listModel from "../models/listModel";
 
 class ListController extends Controller {
   removeItem(id) {
-    if (model.removeTodoItemById(id)) {
+    if (listModel.removeTodoItemById(id)) {
       this.respond("itemRemoved", id);
     }
   }
@@ -265,10 +265,10 @@ listComponent(listModel.todos, document.getElementById("list"));
 
 ### **3. Build flexible and maintainable business logic.**
 
-Domain Driven Design(DDD) is recommended. We can have multiple domains(models) and each domain provides methods to manipulate data. Ajax calls are placed in controllers.
+Domain Driven Design(DDD) is recommended. We can have multiple domains(models) and each domain provides methods to manipulate data. Ajax requests are sent in controllers.
 
 ```javascript
-// models/userModel.js
+// models/listModel.js
 class listModel {
   ...
 
@@ -283,13 +283,13 @@ class listModel {
 }
 
 // controllers/listController.js
-/* Assume we've made another module: log */
 import logModel from "../models/logModel";
 
 class ListController {
   ...
 
   toggleItem(id) {
+    /* Assume we've made another module: logModel */
     const log = logModel.getLogContent(id);
 
     return http.post("path/to/log/system", log).then(res => {
