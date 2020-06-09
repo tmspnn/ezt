@@ -109,7 +109,7 @@ Since components are just template functions, we can import them and generate HT
 
 ```javascript
 const express = require("express");
-const listComponent = require("./components/listComponent");
+const listComponent = require("./dist/components/listComponent"); // transpiled component
 
 const app = express();
 
