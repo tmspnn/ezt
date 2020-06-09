@@ -170,22 +170,20 @@ const itemComponent = ezt({
     <button data-ref="btn">Remove</button>
   </li>`,
   init(data, el, refs) {
-    const { id } = data;
-    const { btn } = refs;
     const subscriptions = {};
 
-    btn.addEventListener("click", () => {
-      dispatch("removeItem", id);
+    refs.btn.addEventListener("click", () => {
+      dispatch("removeItem", data.id);
     });
 
-    subscriptions.onRemove = respondTo("itemRemoved", id => {
+    subscriptions.onRemove = respondTo("itemRemoved", onRemove);
+
+    function onRemove(id) {
       if (id === data.id) {
         subscriptions.onRemove.unsubscribe();
-        if (el.parentNode) {
-          el.parentNode.removeChild(el);
-        }
+        el.remove();
       }
-    });
+    }
   }
 });
 
@@ -198,13 +196,15 @@ When rerendering, DOM manipulation is still needed, so libraries like [`jQuery`]
 
 **Why we still choose to manipulate DOM by hand?**
 
-- With components, There won't be a lot of DOM-related code on top level(`window` or `document`), all DOM manipulations are local(deal with the component itself), so most of the time it's not complicated.
+- With components, most of the time DOM manipulations are local(deal with the component itself) and not complicated.
 
 - Template engines don't deal with event listeners, we have to add them in `init` method.
 
-- Most of the UI changes are implemented by CSS. CSS is a natual state machine.
+- Vanilla JS has better performance and is easier to optimize.
 
-- No concerns on `componentShouldUpdate`, `forceUpdate` .etc, and subscriptions are more flexible than component lifecycle hooks.
+- No concerns on `componentShouldUpdate`, `forceUpdate`...
+
+- Subscriptions are more flexible than component lifecycle hooks.
 
 ---
 
@@ -289,7 +289,7 @@ class ListController {
   ...
 
   toggleItem(id) {
-    /* Assume we've made another module: logModel */
+    /* Assume we've added another module named logModel */
     const log = logModel.getLogContent(id);
 
     return http.post("path/to/log/system", log).then(res => {
@@ -301,6 +301,8 @@ class ListController {
 }
 
 ```
+
+We can tear down our business logic into multiple modules and make our app maintainable.
 
 ---
 
@@ -316,7 +318,7 @@ class ListController {
 - [respondTo](#ezt-respond-to)
 - [TemplateOptions](#ezt-template-options)
 
-### <a name="ezt-action"></a> `ezt.Component`
+### <a name="ezt-component"></a> `ezt.Component`
 
 ```typescript
 interface Component {
