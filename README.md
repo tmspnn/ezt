@@ -190,7 +190,7 @@ const itemComponent = ezt({
 export default itemComponent;
 ```
 
-The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and refs is the reference to the DOM elements with attribute `data-ref`.
+The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and `refs` is the reference to the DOM elements with attribute `data-ref`.
 
 When rerendering, DOM manipulation is still needed, so libraries like [`jQuery`](https://jquery.com/) or [`DOM7`](https://framework7.io/docs/dom7.html) are recommended.
 
