@@ -136,7 +136,7 @@ app.listen(3000);
 
 ### **2. Declare UI and interaction of our web app.**
 
-EZT uses [`lodash.template`](https://lodash.com/docs/4.17.15#template) and UI declaration is just the same:
+EZT uses [`lodash.template`](https://lodash.com/docs/4.17.15#template){:target="\_blank"} and UI declaration is just the same:
 
 ```js
 let t = ezt("hello <%= name %>!");
@@ -152,7 +152,7 @@ t = ezt('<%= "\\<%- value %\\>" %>');
 t({ value: "This value will be ignored" }); // "<%- value %>"
 ```
 
-for more examples, you can check [lodash docs](https://lodash.com/docs/4.17.15#template).
+for more examples, you can check [lodash docs](https://lodash.com/docs/4.17.15#template){:target="\_blank"}.
 
 EZT is based no template, not virtual DOM, so there is no `setState`. EZT adopts traditional **MVC** instead of state-centralized
 patterns. Components are in view layer, they can either dispatch an action or respond to data change. Let's make the example above more practical, if we want to remove a todo item:
@@ -194,7 +194,7 @@ export default itemComponent;
 
 The `init` method is used to define the client side behavior of components. `data` is the data object passed to the component, `el` is the DOM element of the component, and refs is the reference to the DOM elements with attribute `data-ref`.
 
-When rerendering, DOM manipulation is still needed, so libraries like `jQuery` or `DOM7` are recommended.
+When rerendering, DOM manipulation is still needed, so libraries like [`jQuery`](https://jquery.com/){:target="\_blank"} or [`DOM7`](https://framework7.io/docs/dom7.html){:target="\_blank"} are recommended.
 
 **Why we still choose to manipulate DOM by hand?**
 
